@@ -467,12 +467,13 @@ cax = ax.matshow(confusion.numpy())
 fig.colorbar(cax)
 
 # Set up axes
-ax.set_xticklabels([''] + all_categories, rotation=90)
-ax.set_yticklabels([''] + all_categories)
-
-# Force label at every tick
-ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
-ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+tick_positions = list(range(n_categories))
+ax.set_xticks(tick_positions)
+ax.set_yticks(tick_positions)
+ax.set_xticklabels(all_categories, rotation=90)
+ax.set_yticklabels(all_categories)
+ax.xaxis.set_major_locator(ticker.FixedLocator(tick_positions))
+ax.yaxis.set_major_locator(ticker.FixedLocator(tick_positions))
 
 # sphinx_gallery_thumbnail_number = 2
 plt.show()
