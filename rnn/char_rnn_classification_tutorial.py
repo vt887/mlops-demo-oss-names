@@ -79,6 +79,21 @@ from utils import get_args
 
 args = get_args()
 
+import configparser
+
+# Load configuration
+config = configparser.ConfigParser()
+config.read("config/config.ini")
+
+dump_dir = Path(config["DEFAULT"]["dump_dir"])
+experiment_name = config["DEFAULT"]["experiment_name"]
+n_iters = int(config["DEFAULT"]["n_iters"])
+
+# Update args to use config values
+args.dump_dir = dump_dir
+args.experiment_name = experiment_name
+args.n_iters = n_iters
+
 def findFiles(path: Path): return glob.glob(str(path))
 
 print(findFiles(args.data_path / "names" / "*.txt"))
@@ -540,3 +555,8 @@ predict('Satoshi')
 #    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
 #    -  Combine multiple of these RNNs as a higher level network
 #
+
+# Save the model
+model_path = args.dump_dir / "name_rnn.pt"
+torch.save(rnn.state_dict(), model_path)
+print(f"Model saved to {model_path}")
