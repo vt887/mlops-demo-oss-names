@@ -1,20 +1,20 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 # Code quality / type checking / formatting
 flake8>=6.0.0
 mypy>=1.5.1
 isort>=6.12.0
 black>=23.9.1
 
-# PyTorch and related
-torch>=2.1.0
-torchvision>=0.16.0
-torchaudio>=2.1.0
+# PyTorch and related (CPU wheels to avoid CUDA downloads)
+torch==2.2.2
+torchvision==0.17.2
+torchaudio==2.2.2
 
 # Utilities
 tqdm>=4.66.0
 tensorboard>=2.15.0
 matplotlib>=3.8.0
 numpy<2.0
+pathspec>=0.9.0,<1.0.0
 
-# FastAPI web server
-fastapi>=0.109.0
-uvicorn[standard]>=0.24.0
+bottle>=0.12.25

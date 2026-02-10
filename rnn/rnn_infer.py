@@ -40,7 +40,14 @@ if n_categories == 0:
 
 # Load the trained RNN model
 model = RNN(n_letters, 128, n_categories)
-model.load_state_dict(torch.load(dump_dir / output_file))
+checkpoint_path = dump_dir_with_host / output_file
+if not checkpoint_path.exists():
+    fallback_path = base_dump_dir / output_file
+    if fallback_path.exists():
+        checkpoint_path = fallback_path
+    else:
+        raise FileNotFoundError(f"No checkpoint found at {checkpoint_path} or {fallback_path}; ensure training has produced {output_file}.")
+model.load_state_dict(torch.load(checkpoint_path))
 model.eval()
 
 # Log category-to-index mapping for debugging
