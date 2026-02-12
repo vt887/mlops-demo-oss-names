@@ -20,6 +20,7 @@ data_dir = Path(config["DEFAULT"]["data_dir"])
 data_files = config["DEFAULT"]["data_files"]
 base_dump_dir = Path(config["DEFAULT"]["dump_dir"])
 output_file = config["DEFAULT"]["output_file"]
+n_predictions = config["DEFAULT"]["n_predictions"]
 
 # Use the machine hostname for organizing outputs (some checkpoints store under results/<hostname>/)
 hostname = socket.gethostname()
@@ -54,19 +55,23 @@ model.eval()
 print("Category-to-index mapping:", {i: category for i, category in enumerate(categories)})
 
 @app.get("/predict")
-def predict(name: str, n_predictions: int = 1):
+def predict(name: str, n_predictions: int = n_predictions):
     """
     Predict the category of a given name.
 
     Args:
         name (str): The name to classify.
-        n_predictions (int): Number of top predictions to return.
+        n_predictions (int): Number of top predictions to return (default 3).
 
     Returns:
         dict: A dictionary containing the name, predicted_category (top-1), and a list of top predictions with probabilities.
     """
     if not isinstance(name, str) or name.strip() == "":
         return {"error": "Invalid or empty name provided."}
+
+    # Guard against invalid n_predictions values to keep the API predictable
+    if not isinstance(n_predictions, int) or n_predictions < 1:
+        return {"error": "n_predictions must be a positive integer."}
 
     # Clean the name by keeping only characters known to the model
     cleaned = ''.join([c for c in name if c in all_letters])
@@ -86,12 +91,12 @@ def predict(name: str, n_predictions: int = 1):
         # Output is log-probabilities (LogSoftmax). Convert to probabilities for clearer API values
         probs = torch.exp(output)
 
-        # Get top N predictions
+        # Get top N predictions (limited to available categories)
         topv, topi = probs.topk(min(n_predictions, probs.size(1)), dim=1)
 
         predictions = []
         for i in range(topv.size(1)):
-            value = topv[0][i].item()
+            value = float(topv[0][i].item())
             category_index = topi[0][i].item()
             predictions.append({"category": categories[category_index], "probability": value})
 
