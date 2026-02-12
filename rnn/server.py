@@ -20,7 +20,7 @@ _categories = load_categories(_config["data_dir"], _config["data_files"])
 _checkpoint = _config["dump_dir_with_host"] / _config["output_file"]
 _fallback = _config["dump_dir"] / _config["output_file"]
 _model = load_model(len(_categories), _checkpoint, _fallback)
-_DEFAULT_TOP_N = 3
+_default_top_n = _config["top_n"]
 
 
 def _as_json(payload, status=200):
@@ -45,7 +45,7 @@ def _build_payload(name: str, n_predictions: int):
 @app.get("/predict")
 def predict_handler():
     name = request.query.get("name", "")
-    raw_top = request.query.get("n", _DEFAULT_TOP_N)
+    raw_top = request.query.get("n", _default_top_n)
     try:
         top_n = max(1, int(raw_top))
     except (TypeError, ValueError):
@@ -62,11 +62,11 @@ def legacy_handler(name):
     if name == "favicon.ico":
         return _as_json({"error": "Not Found"}, status=404)
     try:
-        payload = _build_payload(name, _DEFAULT_TOP_N)
+        payload = _build_payload(name, _default_top_n)
     except ValueError as exc:
         return _as_json({"error": str(exc)}, status=400)
     return _as_json(payload)
 
 
 if __name__ == "__main__":
-    run(app=app, host="localhost", port=5533)
+    run(app=app, host="localhost", port=8080)

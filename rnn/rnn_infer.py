@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 # Import necessary libraries
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 import torch
 from .rnn_model import RNN, n_letters, line_to_tensor, all_letters
 from pathlib import Path
@@ -10,6 +11,56 @@ import socket
 
 # Initialize FastAPI application
 app = FastAPI()
+
+
+@app.get("/")
+def root():
+    """
+    Present a friendly landing payload describing available endpoints.
+
+    Returns:
+        dict: Service metadata plus example routes.
+    """
+    return {
+        "message": "Character-level name classifier service",
+        "endpoints": {
+            "health": "/health",
+            "predict": "/predict?name=Ivanov&n_predictions=3",
+        },
+    }
+
+
+@app.get("/health")
+def health():
+    """
+    Report basic service liveness for external health checks.
+
+    Returns:
+        dict: Health payload containing a static OK status.
+    """
+    return {"status": "ok"}
+
+
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    """
+    Return a descriptive JSON body when no route matches the request.
+
+    Args:
+        request (Request): Incoming HTTP request information.
+        exc (Exception): Raised routing exception.
+
+    Returns:
+        fastapi.responses.JSONResponse: JSON payload pointing to valid endpoints.
+    """
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": "Endpoint not found",
+            "path": request.url.path,
+            "hint": "Use /predict?name=Ivanov or call /health for status",
+        },
+    )
 
 # Load configuration from config.ini
 config = configparser.ConfigParser()
@@ -64,7 +115,7 @@ def predict(name: str, n_predictions: int = n_predictions):
         n_predictions (int): Number of top predictions to return (default 3).
 
     Returns:
-        dict: A dictionary containing the name, predicted_category (top-1), and a list of top predictions with probabilities.
+        dict: Response payload containing name, predicted_category, and predictions list.
     """
     if not isinstance(name, str) or name.strip() == "":
         return {"error": "Invalid or empty name provided."}

@@ -21,12 +21,14 @@ def load_config():
     config.read(PROJECT_ROOT / "config" / "config.ini")
     base_dump_dir = Path(config["DEFAULT"]["dump_dir"])
     hostname = socket.gethostname()
+    default_section = config["DEFAULT"]
     return {
-        "data_dir": Path(config["DEFAULT"]["data_dir"]),
-        "data_files": config["DEFAULT"]["data_files"],
+        "data_dir": Path(default_section["data_dir"]),
+        "data_files": default_section["data_files"],
         "dump_dir": base_dump_dir,
         "dump_dir_with_host": base_dump_dir / hostname,
-        "output_file": config["DEFAULT"]["output_file"],
+        "output_file": default_section["output_file"],
+        "top_n": int(default_section.get("top_n", 1)),
     }
 
 

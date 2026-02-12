@@ -29,6 +29,12 @@ dump_dir = dump_dir / hostname
 
 # Dynamically load categories from the training data
 def load_categories():
+    """
+    Load category names and their corresponding lines from the configured data directory.
+
+    Returns:
+        tuple[list[str], dict[str, list[str]]]: Ordered categories and per-category line samples.
+    """
     category_files = list(data_dir.glob(data_files))
     categories = [file.stem for file in category_files]
     category_lines = {}
@@ -42,6 +48,13 @@ n_categories = len(categories)
 
 # Randomly select a training example
 def random_training_example():
+    """
+    Sample a random (category, line) pair converted into tensors for training.
+
+    Returns:
+        tuple[str, str, torch.Tensor, torch.Tensor]:
+            Category name, raw line, category tensor, and encoded line tensor.
+    """
     category = random.choice(categories)
     line = random.choice(category_lines[category])
     category_tensor = torch.tensor([categories.index(category)], dtype=torch.long)
@@ -58,6 +71,15 @@ optimizer = optim.SGD(model.parameters(), lr=0.005)
 
 # Helper function to calculate time elapsed
 def time_since(since):
+    """
+    Format elapsed wall-clock time since the provided timestamp.
+
+    Args:
+        since (float): Epoch timestamp captured before training started.
+
+    Returns:
+        str: Human-readable minutes and seconds string.
+    """
     now = time.time()
     s = now - since
     m = math.floor(s / 60)
@@ -66,6 +88,16 @@ def time_since(since):
 
 # Train the model on a single example
 def train(category_tensor, line_tensor):
+    """
+    Execute a single training step for one name/category pair.
+
+    Args:
+        category_tensor (torch.Tensor): Target category indices.
+        line_tensor (torch.Tensor): Encoded character sequence for the sampled name.
+
+    Returns:
+        tuple[torch.Tensor, float]: Model output logits and the scalar loss value.
+    """
     hidden = model.init_hidden()
 
     model.zero_grad()
